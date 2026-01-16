@@ -1,8 +1,9 @@
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 N = "7" # Tu número de clase
 iniciales = "mrm"
 
 Vagrant.configure("2") do |config|
-
+  config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
 # Definición del equipo gw
   config.vm.define "gw" do |gw|
     gw.vm.box = "bento/ubuntu-24.04"
