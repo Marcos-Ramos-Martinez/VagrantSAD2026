@@ -55,11 +55,27 @@ iptables -A OUTPUT -o eth3 -d 127.2.7.10 -p tcp --sport 22 -m conntrack --ctstat
 # R1. Se debe hacer NAT del trafico saliente
 iptables -t nat -A POSTROUTING -s 172.2.7.0/24 -o eth0 -j MASQUERADE
 
+# R2. Permitir acceso desde la WAN a WWW a traves del 80 haciendo part forwarding
+iptables -A FORWARD -i eth1 -o eth2 -s 203.0.113.0/24 -d 172.1.7.3 -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth2 -o eth1 -s 172.1.7.3 -d 203.0.113.0/24 -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# R3.a Usuarios de la LAN pueden acceder a 80 y 443 de www
+iptables -A FORWARD -i eth3 -o eth2 -s 172.2.7.0/24 -d 172.1.7.3 -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth2 -o eth3 -s 172.1.7.3 -d 172.2.7.0/24 -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i eth3 -o eth2 -s 172.2.7.0/24 -d 172.1.7.3 -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth2 -o eth3 -s 172.1.7.3 -d 172.2.7.0/24 -p tcp --sport 443 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# R3.b Adminpc puede acceder por ssh a todo en la DMZ
+iptables -A FORWARD -i eth3 -o eth2 -s 172.2.7.10 -d 172.1.7.0/24 -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth2 -o eth3 -s 172.1.7.0/24 -d 172.2.7.10 -p tcp --sport 22 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 # R4. Permitir salir trafico de la LAN
-iptables -A FORWADR -i eth3 -o eth0 -p 172.2.7.0/24 tcp -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-iptables -A FORWADR -i eth0 -o eth3 -p 172.2.7.0/24 tcp -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth3 -o eth0 -s 172.2.7.0/24 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth0 -o eth3 -d 172.2.7.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
+# R5. Permitir salir trafico de la DMZ (solo http/https/dns/ntp)
+iptables -A FORWARD -i eth3 -o eth2 -s 172.1.7.0/24 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth2 -o eth3 -d 172.1.7.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 ##### Logs para depurar
 iptables -A INPUT -j LOG --log-prefix "MRM-INPUT: "
