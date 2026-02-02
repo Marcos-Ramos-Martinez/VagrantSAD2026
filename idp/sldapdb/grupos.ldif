@@ -1,0 +1,9 @@
+dn: cn=marron,ou=ou_grupos,dc=perucaca,dc=org
+objectClass: top
+objectClass: posixGroup
+gidNumber: 10000
+
+dn: cn=menosmarron,ou=ou_grupos,dc=perucaca,dc=org
+objectClass: top
+objectClass: posixGroup
+gidNumber: 10001

@@ -6,8 +6,6 @@ echo "########################################"
 
 # 1. Limpieza y actualización
 apk update
-apk del apache2 apache2-ssl apache2-utils php81-apache2 2>/dev/null
-killall httpd 2>/dev/null
 
 # 2. Instalación de Nginx, OpenSSL y PHP 8.1
 # Instalamos php81-fpm (el motor) y php81 (el lenguaje)

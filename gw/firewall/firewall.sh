@@ -88,6 +88,10 @@ iptables -A FORWARD -i eth0 -o eth2 -d 172.1.7.0/24 -p udp --sport 53 -m conntra
 iptables -A FORWARD -i eth2 -o eth0 -s 172.1.7.0/24 -p udp --dport 123 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT 
 iptables -A FORWARD -i eth0 -o eth2 -d 172.1.7.0/24 -p udp --sport 123 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
+# P4. Permitir aceso a ldap desde dmz
+iptables -A FORWARD -i eth2 -o eth3 -s 172.1.7.0/24 -d 172.2.7.2 -p tcp --dport 389 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth3 -o eth2 -s 172.2.7.2 -d 172.1.7.0/24 -p tcp --sport 389 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
 ##### Logs para depurar
 iptables -A INPUT -j LOG --log-prefix "MRM-INPUT: "
 iptables -A OUTPUT -j LOG --log-prefix "MRM-OUTPUT: "

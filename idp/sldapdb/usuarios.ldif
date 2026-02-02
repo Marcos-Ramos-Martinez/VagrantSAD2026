@@ -1,0 +1,48 @@
+#dn: uid=peruano,ou=ou_usuarios,dc=perucaca,dc=org
+#objectClass: top
+#objectClass: posixAccount
+#objectClass: inetOrgPerson
+#objectClass: person
+#cn: peruano gonzalez
+#givenName: peruano
+#sn: gonzalez
+#uid: peruanog
+#uidNumber: 2000
+#gidNumber: 10000
+#homeDirectory: /home/peruano
+#loginShell: /bin/bash
+#userPassword: {SSHA}lxQzYFb35a2n1bsE/QPgnOf78hvtDggP
+#mail: peruanog@perucaca.org
+
+#dn: uid=mexicano,ou=ou_usuarios,dc=perucaca,dc=org
+#objectClass: top
+#objectClass: posixAccount
+#objectClass: inetOrgPerson
+#objectClass: person
+#cn: mexicano sanchez
+#givenName: mexicano
+#sn: sanchez
+#uid: mexicanos
+#uidNumber: 2004
+#gidNumber: 10000
+#homeDirectory: /home/mexicano
+#loginShell: /bin/bash
+#userPassword: {SSHA}lxQzYFb35a2n1bsE/QPgnOf78hvtDggP
+#mail: mexicanos@perucaca.org
+
+dn: uid=chileno,ou=ou_usuarios,dc=perucaca,dc=org
+objectClass: top
+objectClass: posixAccount
+objectClass: inetOrgPerson
+objectClass: person
+cn: chileno waton
+givenName: chileno 
+sn: waton
+uid: chileno
+uidNumber: 2005
+gidNumber: 10001
+homeDirectory: /home/chileno
+loginShell: /bin/bash
+userPassword: {SSHA}lxQzYFb35a2n1bsE/QPgnOf78hvtDggP
+mail: chilenow@perucaca.org
+
