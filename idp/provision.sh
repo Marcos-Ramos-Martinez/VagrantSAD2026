@@ -49,5 +49,14 @@ ldapadd -x -D "cn=admin,dc=perucaca,dc=org" -w $LDAP_PASS -f "$DB_DIR/basen.ldif
 echo "[*] Cargando grupos..."
 ldapadd -x -D "cn=admin,dc=perucaca,dc=org" -w $LDAP_PASS -f "$DB_DIR/grupos.ldif" -c
 echo "[*] Cargando usuarios..."
-ldapadd -x -D "cn=admin,dc=perucaca,dc=org" -w $LDAP_PASS -f "$DB_DIR/usr.ldif" -c
+ldapadd -x -D "cn=admin,dc=perucaca,dc=org" -w $LDAP_PASS -f "$DB_DIR/usuarios.ldif" -c
+echo "[*] Cargando usuarios del proxy..."
+ldapadd -x -D "cn=admin,dc=perucaca,dc=org" -w $LDAP_PASS -f "$DB_DIR/proxy_users.ldif" -c
+
+# Acceso web a través del proxy
+echo "[*] Configurando acceso web a través del proxy"
+cat <<EOF > /etc/apt/apt.conf.d/7proxy
+Acquire::http::Proxy "http://172.1.7.2:3128/";
+Acquire::https::Proxy "http://172.1.7.2:3128/";
+EOF
 echo "------ FIN ------"

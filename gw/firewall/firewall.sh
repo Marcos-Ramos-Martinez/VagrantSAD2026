@@ -46,8 +46,8 @@ iptables -A OUTPUT -o eth0 -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLI
 iptables -A INPUT -i eth0 -p tcp --sport 443 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 # l6 Permitir trafico SSH solo desde adminpc
-iptables -A INPUT -i eth3 -s 127.2.7.10 -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth3 -d 127.2.7.10 -p tcp --sport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A INPUT -i eth3 -s 172.2.7.10 -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -o eth3 -d 172.2.7.10 -p tcp --sport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 
 ###################################
 # Reglas de proteccion de red
@@ -71,16 +71,13 @@ iptables -A FORWARD -i eth2 -o eth3 -s 172.1.7.3 -d 172.2.7.0/24 -p tcp --sport 
 iptables -A FORWARD -i eth3 -o eth2 -s 172.2.7.10 -d 172.1.7.0/24 -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 iptables -A FORWARD -i eth2 -o eth3 -s 172.1.7.0/24 -d 172.2.7.10 -p tcp --sport 22 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
+
+
 # R4. Permitir salir trafico de la LAN
 iptables -A FORWARD -i eth3 -o eth0 -s 172.2.7.0/24 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 iptables -A FORWARD -i eth0 -o eth3 -d 172.2.7.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 # R5. Permitir salir trafico de la DMZ (solo http/https/dns/ntp)
-iptables -A FORWARD -i eth2 -o eth0 -s 172.1.7.0/24 -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT 
-iptables -A FORWARD -i eth0 -o eth2 -d 172.1.7.0/24 -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT 
-
-iptables -A FORWARD -i eth2 -o eth0 -s 172.1.7.0/24 -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT 
-iptables -A FORWARD -i eth0 -o eth2 -d 172.1.7.0/24 -p tcp --sport 443 -m conntrack --ctstate ESTABLISHED -j ACCEPT 
 
 iptables -A FORWARD -i eth2 -o eth0 -s 172.1.7.0/24 -p udp --dport 53 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT 
 iptables -A FORWARD -i eth0 -o eth2 -d 172.1.7.0/24 -p udp --sport 53 -m conntrack --ctstate ESTABLISHED -j ACCEPT 
@@ -88,9 +85,18 @@ iptables -A FORWARD -i eth0 -o eth2 -d 172.1.7.0/24 -p udp --sport 53 -m conntra
 iptables -A FORWARD -i eth2 -o eth0 -s 172.1.7.0/24 -p udp --dport 123 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT 
 iptables -A FORWARD -i eth0 -o eth2 -d 172.1.7.0/24 -p udp --sport 123 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
+# Regla P6. Permitir acceso de la LAN al squid de la DMZ
+iptables -A FORWARD -i eth3 -o eth2 -s 172.2.7.0/24 -d 172.1.7.2 -p tcp --dport 3128 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth2 -o eth3 -s 172.1.7.2 -d 172.2.7.0/24 -p tcp --sport 3128 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Acceso a http y https para el proxy
+iptables -A FORWARD -i eth2 -o eth0 -s 172.1.7.2 -p tcp -m multiport --dports 80,443 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT 
+iptables -A FORWARD -i eth0 -o eth2 -d 172.1.7.2 -p tcp -m multiport --sports 80,443 -m conntrack --ctstate ESTABLISHED -j ACCEPT 
+
 # P4. Permitir aceso a ldap desde dmz
 iptables -A FORWARD -i eth2 -o eth3 -s 172.1.7.0/24 -d 172.2.7.2 -p tcp --dport 389 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 iptables -A FORWARD -i eth3 -o eth2 -s 172.2.7.2 -d 172.1.7.0/24 -p tcp --sport 389 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
 
 ##### Logs para depurar
 iptables -A INPUT -j LOG --log-prefix "MRM-INPUT: "
