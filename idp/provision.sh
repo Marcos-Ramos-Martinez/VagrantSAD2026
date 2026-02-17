@@ -49,5 +49,9 @@ ldapadd -x -D "cn=admin,dc=perucaca,dc=org" -w $LDAP_PASS -f "$DB_DIR/basen.ldif
 echo "[*] Cargando grupos..."
 ldapadd -x -D "cn=admin,dc=perucaca,dc=org" -w $LDAP_PASS -f "$DB_DIR/grupos.ldif" -c
 echo "[*] Cargando usuarios..."
-ldapadd -x -D "cn=admin,dc=perucaca,dc=org" -w $LDAP_PASS -f "$DB_DIR/usr.ldif" -c
+ldapadd -x -D "cn=admin,dc=perucaca,dc=org" -w $LDAP_PASS -f "$DB_DIR/usuarios.ldif" -c
+echo "[*] Cargando usuarios de proxy..."
+ldapadd -x -D "cn=admin,dc=perucaca,dc=org" -w $LDAP_PASS -f "$DB_DIR/proxy_users.ldif" -c
+echo "[*] Cargando usuarios de vpn..."
+ldapadd -x -D "cn=admin,dc=perucaca,dc=org" -w $LDAP_PASS -f "$DB_DIR/vpn_users.ldif" -c
 echo "------ FIN ------"

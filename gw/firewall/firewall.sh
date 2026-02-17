@@ -46,8 +46,8 @@ iptables -A OUTPUT -o eth0 -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLI
 iptables -A INPUT -i eth0 -p tcp --sport 443 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 # l6 Permitir trafico SSH solo desde adminpc
-iptables -A INPUT -i eth3 -s 127.2.7.10 -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth3 -d 127.2.7.10 -p tcp --sport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A INPUT -i eth3 -s 172.2.7.10 -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -o eth3 -d 172.2.7.10 -p tcp --sport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 
 ###################################
 # Reglas de proteccion de red
@@ -91,6 +91,34 @@ iptables -A FORWARD -i eth0 -o eth2 -d 172.1.7.0/24 -p udp --sport 123 -m conntr
 # P4. Permitir aceso a ldap desde dmz
 iptables -A FORWARD -i eth2 -o eth3 -s 172.1.7.0/24 -d 172.2.7.2 -p tcp --dport 389 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 iptables -A FORWARD -i eth3 -o eth2 -s 172.2.7.2 -d 172.1.7.0/24 -p tcp --sport 389 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Regla P4.2.1 Permitir acceso WAN (eth1) a servidor VPN
+iptables -A INPUT -i eth1 -p udp --dport 1194 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -o eth1 -p udp --sport 1194 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+# Permitir que OpenVPN responda a clientes WAN
+iptables -A OUTPUT -o eth1 -p udp --sport 1194 -j ACCEPT
+
+
+# Permitir que el openvpn en el GW consulte al servidor LDAP
+iptables -A OUTPUT -o eth3 -d 172.2.7.2 -p tcp --dport 389 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A INPUT -i eth3 -s 172.2.7.2 -p tcp --sport 389 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Regla P4.2.2 Permitir acceso de VPN-net a http de la DMZ
+iptables -A FORWARD -i tun0 -o eth2 -s 172.3.7.0/24 -d 172.1.7.3 -p tcp -m multiport --dports 80,443 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth2 -o tun0 -s 172.1.7.3 -d 172.3.7.0/24 -p tcp -m multiport --sports 80,443 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Regla P4.2.3 Permitir acceso de VPN-net a IDP de la DMZ
+iptables -A FORWARD -i tun0 -o eth3 -s 172.3.7.0/24 -d 172.2.7.2 -p tcp --dport 389 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth3 -o tun0 -s 172.2.7.2 -d 172.3.7.0/24 -p tcp --sport 389 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# P6. Permitir acceso de la LAN al proxy Squid en la DMZ
+iptables -A FORWARD -i eth3 -o eth2 -s 172.2.7.0/24 -d 172.1.7.2 -p tcp --dport 3128 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth2 -o eth3 -s 172.1.7.2 -d 172.2.7.0/24 -p tcp --sport 3128 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+iptables -A FORWARD -i eth3 -o eth2 -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A FORWARD -i eth2 -o eth3 -p icmp --icmp-type echo-reply -j ACCEPT
+
+
 
 ##### Logs para depurar
 iptables -A INPUT -j LOG --log-prefix "MRM-INPUT: "
