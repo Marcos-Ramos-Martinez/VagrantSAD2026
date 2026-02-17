@@ -118,7 +118,11 @@ iptables -A FORWARD -i eth2 -o eth3 -s 172.1.7.2 -d 172.2.7.0/24 -p tcp --sport 
 iptables -A FORWARD -i eth3 -o eth2 -p icmp --icmp-type echo-request -j ACCEPT
 iptables -A FORWARD -i eth2 -o eth3 -p icmp --icmp-type echo-reply -j ACCEPT
 
-
+# --- NUEVO: Permitir PING desde la VPN (tun0) a LAN y DMZ ---
+# Permitir que el tráfico ICMP (ping) entre desde el túnel hacia dentro
+iptables -A FORWARD -i tun0 -p icmp -j ACCEPT
+# Permitir que la respuesta del ping vuelva al túnel
+iptables -A FORWARD -o tun0 -p icmp -j ACCEPT
 
 ##### Logs para depurar
 iptables -A INPUT -j LOG --log-prefix "MRM-INPUT: "
